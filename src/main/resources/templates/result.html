@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+<p>Графики</p>
+<img th:src="@{/Charts.png}"/>
+<div>
+  Интерполированное значение по методу Лагранжа: <span th:text="${lagrange}"></span>
+</div>
+<div>
+  Интерполированное значение по методу Ньютона: <span th:text="${newton}"></span>
+</div>
+<br/><br/>
+<p>Таблица разностей:</p>
+<table>
+  <tr th:each="row : ${differences}">
+    <td th:each="value : ${row}" th:text="${value}"></td>
+  </tr>
+</table>
+</body>
+</html>

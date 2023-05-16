@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <title>Таблица</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            background-color: #f8f8f8;
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+        }
+
+        h1 {
+            color: #333333;
+            margin-top: 50px;
+            text-align: center;
+        }
+
+        form {
+            margin-top: 50px;
+            text-align: center;
+        }
+
+        label {
+            display: inline-block;
+            margin-right: 10px;
+            text-align: right;
+            width: 120px;
+        }
+
+        input[type="number"], input[type="text"] {
+            font-size: 20px;
+            padding: 10px;
+            width: 200px;
+        }
+
+        button, input[type="button"] {
+            background-color: #4CAF50;
+            border: none;
+            color: #FFFFFF;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+            padding: 10px 20px;
+        }
+
+        button:disabled, input:disabled {
+            background-color: #CCCCCC;
+            color: #666666;
+            cursor: default;
+        }
+
+        table {
+            border-collapse: collapse;
+            margin: 50px auto 0;
+            width: 80%;
+        }
+
+        th, td {
+            border: 1px solid #999999;
+            padding: 10px;
+            text-align: center;
+            line-height: 30px;
+        }
+
+        th {
+            background-color: #EEEEEE;
+        }
+
+        td {
+            width: 30%;
+        }
+
+        tr:nth-child(even) {
+            background-color: #F5F5F5;
+        }
+    </style>
+</head>
+<body>
+<h1>Таблица</h1>
+<form id="myForm">
+    <button type="button" id="f1">Функция sin(x)</button>
+    <button type="button" id="f2">Функция 3x^3 - 7x^2 + 3</button>
+    <label for="left">Левая граница:</label>
+    <input type="number" id="left" step="0.01" min="-50" max="50">
+    <label for="right">Правая граница:</label>
+    <input type="number" id="right" step="0.01" min="-50" max="50">
+    <label for="input">Интерполяционное значение для функций:</label>
+    <input type="number" id="input" step="0.01" min="-50" max="50">
+    <label for="count">Количество узлов интерполяции</label>
+    <input type="number" id="count" min="4">
+    <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+    <button type="button" id="file">Прочитать из файла</button>
+    <label for="rowCount">Количество строк:</label>
+    <input type="number" id="rowCount" name="rowCount" min="4" required>
+    <button type="button" id="createTableBtn">Создать таблицу</button>
+    <br><br>
+    <table id="myTable">
+        <thead>
+        <tr>
+            <th>X</th>
+            <th>Y</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- Таблица будет добавлена здесь через AJAX -->
+        </tbody>
+    </table>
+    <br><br>
+    <label for="number">Введите значение</label>
+    <input type="number" id="number" step="0.01" min="-50" max="50" style="visibility: hidden">
+    <br><br>
+    <button type="submit" id="submitBtn" disabled>Отправить</button>
+</form>
+
+<script>
+    $(function () {
+        $("#file").click(function () {
+            $.ajax({
+                url: "/readFromFile",
+                type: "GET",
+                success: function (response) {
+                    window.location.href = '/result';
+                },
+            });
+
+        });
+        $("#f1").click(function () {
+            if (!document.getElementById("left").value == '' && !document.getElementById("right").value == '' && !document.getElementById("input").value == '' && !document.getElementById("count").value == '') {
+                let data = {
+                    left: document.getElementById("left").value,
+                    right: document.getElementById("right").value,
+                    count: document.getElementById("count").value,
+                    input: document.getElementById("input").value
+                }
+                $.ajax({
+                    url: "/function/1",
+                    type: "POST",
+                    data: JSON.stringify(data),
+                    contentType: 'application/json',
+                    success: function (response) {
+                        window.location.href = '/result';
+                    },
+                });
+            }
+        });
+        $("#f2").click(function () {
+            if (!document.getElementById("left").value == '' && !document.getElementById("right").value == '' && !document.getElementById("input").value == '' && !document.getElementById("count").value == '') {
+                let data = {
+                    left: document.getElementById("left").value,
+                    right: document.getElementById("right").value,
+                    count: document.getElementById("count").value,
+                    input: document.getElementById("input").value
+                }
+                $.ajax({
+                    url: "/function/2",
+                    type: "POST",
+                    data: JSON.stringify(data),
+                    contentType: 'application/json',
+                    success: function (response) {
+                        window.location.href = '/result';
+                    },
+                });
+            }
+        });
+
+        $("#createTableBtn").click(function () {
+            const rowCount = $("#rowCount").val();
+
+            let numRows = document.getElementById("rowCount").value;
+            let table = document.getElementById("myTable").getElementsByTagName('tbody')[0];
+            table.innerHTML = '';
+
+            for (let i = 0; i < numRows; i++) {
+                let row = table.insertRow(i);
+                let cell1 = row.insertCell(0);
+                let cell2 = row.insertCell(1);
+                cell1.innerHTML = '<input type="text" name="col1[]" />';
+                cell2.innerHTML = '<input type="text" name="col2[]" />';
+            }
+            document.getElementById("number").style.visibility = "visible";
+            document.getElementById("number").required = true;
+            $("#submitBtn").prop("disabled", false);
+        });
+
+        $("#myForm").on('submit', function () {
+            const cells = document.querySelectorAll("td input");
+
+            //const data = [];
+            const array = [];
+            for (let i = 0; i < 2; i++) {
+                const rowData = [];
+                for (let j = 0; j < Math.floor(cells.length / 2); j++) {
+                    rowData.push(Number(cells[2 * j + i].value));
+                }
+
+                array.push(rowData);
+            }
+            console.log(JSON.stringify(array));
+            const data = {
+                array: array,
+                number: document.getElementById("number").value
+            }
+            $.ajax({
+                url: "/sendData",
+                type: "POST",
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function (response) {
+                    window.location.href = '/result';
+                },
+            });
+            alert("Данные отправлены!");
+            return false;
+        });
+    });
+</script>
+</body>
+</html>
